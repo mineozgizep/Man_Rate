@@ -1,8 +1,5 @@
 import csv
 
-
-# test değişikliği
-
 import random
 
 from flask import redirect, url_for, request
