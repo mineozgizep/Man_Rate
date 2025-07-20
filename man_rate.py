@@ -114,7 +114,7 @@ def sonuc(kodad):
                            kotu_ozellik=kotu_ozellik)
 
 
-
+# test değişikliği
 
 
 @app.route("/veriler")
