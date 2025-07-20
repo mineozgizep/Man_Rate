@@ -1,6 +1,8 @@
 import csv
 
 
+
+
 import random
 
 from flask import redirect, url_for, request
@@ -114,7 +116,7 @@ def sonuc(kodad):
                            kotu_ozellik=kotu_ozellik)
 
 
-# test değişikliği
+
 
 
 @app.route("/veriler")
