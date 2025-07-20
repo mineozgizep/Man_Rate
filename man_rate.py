@@ -1,7 +1,7 @@
 import csv
 
 
-
+# test değişikliği
 
 import random
 
