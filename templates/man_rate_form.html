@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Ex Puanlama Formu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff7f0;
+            color: #333;
+            margin: 20px auto;
+            max-width: 700px;
+        }
+        h1 {
+            text-align: center;
+            color: #cc3366;
+            margin-bottom: 30px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        input[type=text] {
+            width: 100%;
+            padding: 6px;
+            margin-top: 4px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #ccc;
+            vertical-align: middle;
+        }
+        th {
+            text-align: left;
+            background: #fdecea;
+            color: #cc3366;
+            font-weight: bold;
+        }
+        input.puanlama {
+            width: 60px;
+            text-align: center;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 4px;
+            font-size: 14px;
+        }
+        button {
+            display: block;
+            margin: 30px auto 0;
+            padding: 12px 30px;
+            background: #cc3366;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #b72e5a;
+        }
+        .desc {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bir Ex'i Göm, Bir Ex'i Yücelt: Gerçekleri Yüzeye Çıkar!</h1>
+
+    <form id="exForm" method="POST" onsubmit="return validateForm()" novalidate>
+        <label for="kodad">Senin kod adın:</label>
+        <input type="text" id="kodad" name="kodad" required>
+
+        <label for="isim">Ex'in ismi:</label>
+        <input type="text" id="isim" name="isim" required>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Konumuz</th>
+                    <th style="width:80px;">0-10</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for soru, aciklama in sorular.items() %}
+                <tr>
+                    <td>
+                        <strong>{{ loop.index }}. {{ soru }}</strong>
+                        <div class="desc">{{ aciklama }}</div>
+                    </td>
+                    <td>
+                        <input 
+                            type="text" 
+                            name="{{ soru }}" 
+                            class="puanlama" 
+                            required 
+                            maxlength="2" 
+                            autocomplete="off"
+                            oninput="validatePuanInput(this)"
+                            pattern="[0-9]*"
+                            inputmode="numeric"
+                        >
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit">Onayla</button>
+    </form>
+
+<script>
+    function validatePuanInput(input) {
+        let val = input.value;
+
+        // Sadece rakamlara izin ver, diğer karakterleri temizle
+        val = val.replace(/[^0-9]/g, '');
+
+                // 00'u 0 olarak düzelt
+        if (val === '00') {
+            val = '0';
+        }
+
+        // 2 haneli olabilir ama 10'dan büyük olamaz
+        if (val.length > 0) {
+            let num = parseInt(val, 10);
+
+            if (num > 10) {
+                val = '10';
+            }
+        }
+
+        input.value = val;
+    }
+
+    function validateForm() {
+        const inputs = document.querySelectorAll('.puanlama');
+        for (let input of inputs) {
+            const val = input.value.trim();
+            const num = Number(val);
+            if (val === '' || !Number.isInteger(num) || num < 0 || num > 10) {
+                alert("Lütfen tüm puanlamaları 0 ile 10 arasında tam sayı olarak doldurun!");
+                input.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+</script>
+
+</body>
+</html>

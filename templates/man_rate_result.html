@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sonuç</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f9fc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        a.button {
+            text-decoration: none;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        a.button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Arkadaşına Gönder</h2>
+
+        <h3>Genel Puan:</h3>
+        <p>{{ overall_score }}</p>
+
+        <h3>Yorum:</h3>
+        <p>{{ comment }}</p>
+
+        <p>{{ iyi_ozellik }} var, fakat {{ kotu_ozellik }} yok</p>
+
+
+        <a href="{{ form_link }}" class="button" target="_blank" rel="noopener noreferrer">Formu Gönder</a>
+    </div>
+</body>
+</html>

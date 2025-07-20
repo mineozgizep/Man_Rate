@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Veriler</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #fff7f0;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #cc3366;
+      font-size: 2rem;
+      margin-bottom: 40px;
+    }
+
+    table {
+      min-width: 1200px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      margin: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      background: white;
+    }
+
+    th {
+      background: linear-gradient(to right, #fff3f6, #ffeef2);
+      color: #cc3366;
+      font-weight: 500;
+      font-size: 14px;
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      text-align: center;
+      text-transform: none;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 12px;
+      border: 1px solid #eee;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    td:first-child,
+    th:first-child {
+      font-weight: bold;
+      background-color: #fff6f9;
+      color: #d6336c;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #fef6f9;
+    }
+
+    tr:hover td {
+      background-color: #fbe3ec;
+    }
+
+    @media screen and (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead tr {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 15px;
+      }
+
+      td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>VERİLER</h1>
+
+  {% if veri_listesi %}
+    <table>
+      <thead>
+        <tr>
+          <th>Kod Adı</th>
+          <th>Ex İsmi</th>
+          <th>Empati</th>
+          <th>Güvenilirlik</th>
+          <th>Duygusallık</th>
+          <th>Romantiklik</th>
+          <th>Espri Anlayışı</th>
+          <th>Zeka</th>
+          <th>Hırs</th>
+          <th>Tutku</th>
+          <th>Sorumluluk Sahibi Olma</th>
+          <th>Duygusallık</th>
+          <th>Kıskançlık</th>
+          <th>Sosyal Hayat</th>
+          <th>Seyahat ve Macera İsteği</th>
+          <th>Fiziksel Çekicilik</th>
+          <th>Cinsel Uyum</th>
+          <th>Öpücük Kalitesi</th>
+          <th>Ön Sevişme</th>
+          <th>Yatakta Yaratıcılık</th>
+          <th>Fanteziye Açıklık</th>
+          <th>Cinsel İstek</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for satir in veri_listesi %}
+            {% if loop.index0 != 0 %}
+            <tr>
+                {% for hucre in satir %}
+                <td>{{ hucre }}</td>
+                {% endfor %}
+            </tr>
+            {% endif %}
+        {% endfor %}
+
+      </tbody>
+    </table>
+  {% else %}
+    <p style="text-align: center;">Veri bulunamadı.</p>
+  {% endif %}
+</body>
+</html>

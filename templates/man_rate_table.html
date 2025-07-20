@@ -1,0 +1,94 @@
+<head>
+    <meta charset="UTF-8" />
+    <title>Tablo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff7f0;
+            color: #333;
+            margin: 20px auto;
+            max-width: 700px;
+        }
+        h1 {
+            text-align: center;
+            color: #cc3366;
+            margin-bottom: 30px;
+        }
+        h2, h3 {
+            text-align: center;
+            color: #cc3366;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .soru-container {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .soru-baslik {
+            font-size: 24px;
+            font-weight: bold;
+            color: #cc3366;
+            margin-bottom: 5px;
+        }
+        .ortalama {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+        .sutunlar {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+        }
+        .sutun {
+            width: 200px;
+        }
+        .sutun h3 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #cc3366;
+            font-weight: bold;
+        }
+        .sutun ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sutun li {
+            text-align: left;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+</body>
+    <h1>ORTALAMA DEĞERLER</h1>
+    <h2>Toplam Kaç Giriş Yapıldı: {{ toplam_giris_sayisi }}</h2>
+
+    {% for soru in sorular %}
+        <div class="soru-container">
+            <div class="soru-baslik">{{ soru }}</div>
+            <div class="ortalama">Ortalama Puan: {{ ortalamalar[soru] }}</div>
+            <div class="sutunlar">
+                <div class="sutun">
+                    <h3>En Kötüler</h3>
+                    <ul>
+                        {% for isim, puan in en_kotuler[soru] %}
+                            <li>{{ isim }}: {{ puan }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="sutun">
+                    <h3>En İyiler</h3>
+                    <ul>
+                        {% for isim, puan in en_iyiler[soru] %}
+                            <li>{{ isim }}: {{ puan }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</body>
+</html>
