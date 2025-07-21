@@ -69,7 +69,7 @@ def form():
 
 
 
-@app.route("/sonuc/<kodad>", methods=["GET"])
+@app.route("/sonuc/<kodad>", methods=["POST"])
 def sonuc(kodad):
     try:
         with open("veriler.csv", newline='', encoding='utf-8') as f:
