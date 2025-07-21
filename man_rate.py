@@ -2,11 +2,18 @@ import csv
 
 import random
 
+import os
+
 from flask import redirect, url_for, request
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 
 app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return redirect(url_for('form'))
+
 
 sorular = {
     "Empati": "Duyguların radarında mı, yoksa sadece Netflix’in duygusal sahnelerinde mi ağlıyor?",
@@ -67,21 +74,13 @@ def sonuc(kodad):
     try:
         with open("veriler.csv", newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
-            puanlar_listesi = []
             for row in reader:
                 if row["Kod Adı"] == kodad:
                     puanlar = {soru: int(row[soru]) for soru in sorular.keys()}
-                    puanlar_listesi.append(puanlar)
     except FileNotFoundError:
-        puanlar_listesi = []
+        return f"<h2> </h2>"
 
-    if not puanlar_listesi:
-        return f"<h2>{kodad} için veri bulunamadı.</h2>"
-
-    # Tüm puanları ortala
-    toplam_puan = {}
-    for soru in sorular.keys():
-        toplam_puan[soru] = sum(d[soru] for d in puanlar_listesi) / len(puanlar_listesi)
+    toplam_puan = puanlar
 
     # 8 ile 10 arasındaki en iyi özellikler
     en_iyi = [(soru, puan) for soru, puan in toplam_puan.items() if 8 <= puan <= 10]
@@ -139,7 +138,6 @@ def tablo():
     try:
         with open("veriler.csv", newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
-            next(reader)  
             veriler = list(reader)
     except FileNotFoundError:
         veriler = []
@@ -197,4 +195,5 @@ def tablo():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
