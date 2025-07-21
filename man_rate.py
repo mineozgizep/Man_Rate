@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return redirect(url_for('form'))
+    return render_template("man_rate_form.html", sorular=sorular)
 
 
 sorular = {
