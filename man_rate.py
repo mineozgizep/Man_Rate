@@ -1,7 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for
-import mysql.connector
+import pymysql
+
 import os
 import random
+
+from db_config import get_db_connection
+
 
 app = Flask(__name__)
 
@@ -53,15 +57,6 @@ key_map = {
     "Cinsel İstek": "cinsel_istek"
 }
 
-# Veritabanı bağlantısı fonksiyonu
-def get_db_connection():
-    return mysql.connector.connect(
-        host=os.environ.get("DB_HOST", "localhost"),
-        user=os.environ.get("DB_USER", "root"),
-        password=os.environ.get("DB_PASS", "Mine12345."),
-        database=os.environ.get("DB_NAME", "man_rate")
-    )
-
 # Form puanlarını temizleyip int yapar
 def clean_score(val):
     try:
@@ -98,7 +93,7 @@ def form():
 @app.route("/sonuc/<kodad>", methods=["GET"])
 def sonuc(kodad):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor
     cursor.execute("SELECT * FROM ratings WHERE kod_adi = %s ORDER BY id DESC LIMIT 1", (kodad,))
     row = cursor.fetchone()
     cursor.close()
@@ -147,7 +142,7 @@ def veriler():
 @app.route("/tablo")
 def tablo():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor
     cursor.execute("SELECT * FROM ratings")
     veriler = cursor.fetchall()
     cursor.close()
