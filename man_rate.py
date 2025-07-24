@@ -3,8 +3,9 @@ import random
 from db_config import get_db_connection
 
 app = Flask(__name__)
+app.jinja_env.globals.update(zip=zip)
 
-# SORU METİNLERİ ve sütun isimleri
+# SORU METİNLERİ (formda gösterilecek)
 sorular = {
     "Empati": "Duyguların radarında mı, yoksa sadece Netflix’in duygusal sahnelerinde mi ağlıyor?",
     "Güvenilirlik": "Sözünde durur mu, yoksa ‘seni ararım’ dediği gibi 3 gün sonra mı hatırlar?",
@@ -28,7 +29,7 @@ sorular = {
     "Cinsel İstek": "Tutkulu bir enerjiyle mi yaklaşır, yoksa ‘bugün yorgunum’lar hep mi var?"
 }
 
-# Türkçe karakter olmayan sütun isimleri
+# Veritabanındaki sütun isimleri (Türkçe karaktersiz, boşluksuz)
 key_map = {
     "Empati": "empati",
     "Güvenilirlik": "guvenilirlik",
@@ -53,6 +54,7 @@ key_map = {
 }
 
 def clean_score(val):
+    """Formdan gelen değeri integer yapar, olmazsa 0 döner"""
     try:
         return int(val)
     except (TypeError, ValueError):
@@ -68,13 +70,14 @@ def form():
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        cols = [key_map[s] for s in sorular]
         sql = f"""
         INSERT INTO ratings (
-            kod_adi, ex_ismi, {', '.join(key_map.values())}
-        ) VALUES (%s, %s, {', '.join(['%s'] * len(key_map))})
+            kod_adi, ex_ismi, {', '.join(cols)}
+        ) VALUES (%s, %s, {', '.join(['%s'] * len(cols))})
         """
-
         values = [kodad, isim] + [puanlar[s] for s in sorular]
+
         cursor.execute(sql, values)
         conn.commit()
         cursor.close()
@@ -96,18 +99,21 @@ def result(kodad):
     if not row:
         return "<h2>Kayıt bulunamadı.</h2>"
 
+    # row bir dict değilse, aşağıdaki gibi dönüştür:
+    if not isinstance(row, dict):
+        row = dict(zip([desc[0] for desc in cursor.description], row))
+
     toplam_puan = {soru: row[key_map[soru]] for soru in sorular}
 
-    en_iyi = [(s, p) for s, p in toplam_puan.items() if p >= 8]
-    en_kotu = [(s, p) for s, p in toplam_puan.items() if p <= 3]
+    # En yüksek ve en düşük puanları bul
+    max_score = max(toplam_puan.values())
+    min_score = min(toplam_puan.values())
 
-    if not en_iyi:
-        en_iyi = sorted(toplam_puan.items(), key=lambda x: x[1], reverse=True)[:3]
-    if not en_kotu:
-        en_kotu = sorted(toplam_puan.items(), key=lambda x: x[1])[:3]
+    en_iyi = [s for s, p in toplam_puan.items() if p == max_score]
+    en_kotu = [s for s, p in toplam_puan.items() if p == min_score]
 
-    iyi_ozellik = random.choice(en_iyi)[0] if en_iyi else "Belirlenemedi"
-    kotu_ozellik = random.choice(en_kotu)[0] if en_kotu else "Belirlenemedi"
+    iyi_ozellik = random.choice(en_iyi) if en_iyi else "Belirlenemedi"
+    kotu_ozellik = random.choice(en_kotu) if en_kotu else "Belirlenemedi"
 
     sonuc_yazisi = f"{kodad}’nın tipi belli oldu: {iyi_ozellik} var, fakat {kotu_ozellik} yok!"
     overall_score = round(sum(toplam_puan.values()) / len(toplam_puan), 2)
@@ -121,6 +127,7 @@ def result(kodad):
         iyi_ozellik=iyi_ozellik,
         kotu_ozellik=kotu_ozellik
     )
+
 
 @app.route("/veriler")
 def veriler():
@@ -157,13 +164,35 @@ def tablo():
     en_iyiler = {}
     en_kotuler = {}
 
+    # Her soru için kod_adı bazlı ortalamaları hesapla
     for soru, key in key_map.items():
-        degerler = [(v["kod_adi"], v.get(key, 0)) for v in veriler if isinstance(v.get(key), (int, float))]
-        if degerler:
-            ort = round(sum(p for _, p in degerler) / len(degerler), 2)
-            ortalamalar[soru] = ort
-            en_iyiler[soru] = sorted(degerler, key=lambda x: x[1], reverse=True)[:5]
-            en_kotuler[soru] = sorted(degerler, key=lambda x: x[1])[:5]
+        kod_ortalamalari = {}
+        sayac = {}
+
+        for v in veriler:
+            kod = v["kod_adi"]
+            deger = v.get(key)
+
+            if isinstance(deger, (int, float)):
+                if kod in kod_ortalamalari:
+                    kod_ortalamalari[kod] += deger
+                    sayac[kod] += 1
+                else:
+                    kod_ortalamalari[kod] = deger
+                    sayac[kod] = 1
+
+        # Gerçek ortalamaları hesapla
+        kod_ortalama_listesi = [
+            (kod, round(kod_ortalamalari[kod] / sayac[kod], 2))
+            for kod in kod_ortalamalari
+        ]
+
+        if kod_ortalama_listesi:
+            ortalamalar[soru] = round(
+                sum(p for _, p in kod_ortalama_listesi) / len(kod_ortalama_listesi), 2
+            )
+            en_iyiler[soru] = sorted(kod_ortalama_listesi, key=lambda x: x[1], reverse=True)[:5]
+            en_kotuler[soru] = sorted(kod_ortalama_listesi, key=lambda x: x[1])[:5]
         else:
             ortalamalar[soru] = "N/A"
             en_iyiler[soru] = []
