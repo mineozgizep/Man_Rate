@@ -1,16 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
-
-import pymysql
-
-import os
 import random
-
 from db_config import get_db_connection
-
 
 app = Flask(__name__)
 
-# SORU METİNLERİ
+# SORU METİNLERİ ve sütun isimleri
 sorular = {
     "Empati": "Duyguların radarında mı, yoksa sadece Netflix’in duygusal sahnelerinde mi ağlıyor?",
     "Güvenilirlik": "Sözünde durur mu, yoksa ‘seni ararım’ dediği gibi 3 gün sonra mı hatırlar?",
@@ -34,7 +28,7 @@ sorular = {
     "Cinsel İstek": "Tutkulu bir enerjiyle mi yaklaşır, yoksa ‘bugün yorgunum’lar hep mi var?"
 }
 
-# Türkçe karakter olmayan sütun isimleri ile eşleme
+# Türkçe karakter olmayan sütun isimleri
 key_map = {
     "Empati": "empati",
     "Güvenilirlik": "guvenilirlik",
@@ -58,7 +52,6 @@ key_map = {
     "Cinsel İstek": "cinsel_istek"
 }
 
-# Form puanlarını temizleyip int yapar
 def clean_score(val):
     try:
         return int(val)
@@ -87,14 +80,14 @@ def form():
         cursor.close()
         conn.close()
 
-        return redirect(url_for('sonuc', kodad=kodad))
+        return redirect(url_for('result', kodad=kodad))
 
     return render_template("man_rate_form.html", sorular=sorular)
 
-@app.route("/sonuc/<kodad>", methods=["GET"])
-def sonuc(kodad):
+@app.route("/result/<kodad>")
+def result(kodad):
     conn = get_db_connection()
-    cursor = conn.cursor
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM ratings WHERE kod_adi = %s ORDER BY id DESC LIMIT 1", (kodad,))
     row = cursor.fetchone()
     cursor.close()
@@ -143,7 +136,7 @@ def veriler():
 @app.route("/tablo")
 def tablo():
     conn = get_db_connection()
-    cursor = conn.cursor
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM ratings")
     veriler = cursor.fetchall()
     cursor.close()
@@ -186,5 +179,4 @@ def tablo():
     )
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(debug=True)
