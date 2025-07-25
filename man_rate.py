@@ -87,6 +87,7 @@ def form():
 
     return render_template("man_rate_form.html", sorular=sorular)
 
+
 @app.route("/result/<kodad>")
 def result(kodad):
     conn = get_db_connection()
