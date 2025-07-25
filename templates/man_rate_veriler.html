@@ -99,51 +99,30 @@
 </head>
 <body>
   <h1>VERİLER</h1>
-
-  {% if veri_listesi %}
+  
+{% if veri_listesi %}
     <table>
       <thead>
         <tr>
-          <th>Kod Adı</th>
-          <th>Ex İsmi</th>
-          <th>Empati</th>
-          <th>Güvenilirlik</th>
-          <th>Duygusallık</th>
-          <th>Romantiklik</th>
-          <th>Espri Anlayışı</th>
-          <th>Zeka</th>
-          <th>Hırs</th>
-          <th>Tutku</th>
-          <th>Sorumluluk Sahibi Olma</th>
-          <th>Duygusallık</th>
-          <th>Kıskançlık</th>
-          <th>Sosyal Hayat</th>
-          <th>Seyahat ve Macera İsteği</th>
-          <th>Fiziksel Çekicilik</th>
-          <th>Cinsel Uyum</th>
-          <th>Öpücük Kalitesi</th>
-          <th>Ön Sevişme</th>
-          <th>Yatakta Yaratıcılık</th>
-          <th>Fanteziye Açıklık</th>
-          <th>Cinsel İstek</th>
+          {% for baslik in columns %}
+            {% if baslik != 'ID' %}
+              <th>{{ baslik }}</th>
+            {% endif %}
+          {% endfor %}
         </tr>
       </thead>
       <tbody>
-
         {% for satir in veri_listesi %}
-            {% if loop.index0 != 0 %}
-            <tr>
-                {% for hucre in satir %}
-                <td>{{ hucre }}</td>
-                {% endfor %}
-            </tr>
-            {% endif %}
+          <tr>
+            {% for baslik in columns %}
+              {% if baslik != 'ID' %}
+                <td data-label="{{ baslik }}">{{ satir[baslik] }}</td>
+              {% endif %}
+            {% endfor %}
+          </tr>
         {% endfor %}
-
       </tbody>
     </table>
   {% else %}
     <p style="text-align: center;">Veri bulunamadı.</p>
   {% endif %}
-</body>
-</html>

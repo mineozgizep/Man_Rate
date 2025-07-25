@@ -87,7 +87,6 @@ def form():
 
     return render_template("man_rate_form.html", sorular=sorular)
 
-
 @app.route("/result/<kodad>")
 def result(kodad):
     conn = get_db_connection()
@@ -100,21 +99,20 @@ def result(kodad):
     if not row:
         return "<h2>Kayıt bulunamadı.</h2>"
 
-    # row bir dict değilse, aşağıdaki gibi dönüştür:
-    if not isinstance(row, dict):
-        row = dict(zip([desc[0] for desc in cursor.description], row))
-
+    # row dict-like değilse, onu da kontrol etmek gerekebilir. Örnek: row bir tuple ise...
+    # Ama eğer cursor.row_factory dict gibi ayarlandıysa direkt aşağıdaki çalışır.
     toplam_puan = {soru: row[key_map[soru]] for soru in sorular}
 
-    # En yüksek ve en düşük puanları bul
-    max_score = max(toplam_puan.values())
-    min_score = min(toplam_puan.values())
+    en_iyi = [(s, p) for s, p in toplam_puan.items() if p >= 8]
+    en_kotu = [(s, p) for s, p in toplam_puan.items() if p <= 3]
 
-    en_iyi = [s for s, p in toplam_puan.items() if p == max_score]
-    en_kotu = [s for s, p in toplam_puan.items() if p == min_score]
+    if not en_iyi:
+        en_iyi = sorted(toplam_puan.items(), key=lambda x: x[1], reverse=True)[:3]
+    if not en_kotu:
+        en_kotu = sorted(toplam_puan.items(), key=lambda x: x[1])[:3]
 
-    iyi_ozellik = random.choice(en_iyi) if en_iyi else "Belirlenemedi"
-    kotu_ozellik = random.choice(en_kotu) if en_kotu else "Belirlenemedi"
+    iyi_ozellik = random.choice(en_iyi)[0] if en_iyi else "Belirlenemedi"
+    kotu_ozellik = random.choice(en_kotu)[0] if en_kotu else "Belirlenemedi"
 
     sonuc_yazisi = f"{kodad}’nın tipi belli oldu: {iyi_ozellik} var, fakat {kotu_ozellik} yok!"
     overall_score = round(sum(toplam_puan.values()) / len(toplam_puan), 2)
@@ -129,17 +127,19 @@ def result(kodad):
         kotu_ozellik=kotu_ozellik
     )
 
-
 @app.route("/veriler")
 def veriler():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM ratings ORDER BY id DESC")
-    veri_listesi = cursor.fetchall()
     columns = [desc[0] for desc in cursor.description]
+    columns = columns[1:]
+    veri_listesi  = cursor.fetchall()
+
     cursor.close()
     conn.close()
-    return render_template("man_rate_veriler.html", veri_listesi=veri_listesi, columns=columns)
+
+    return render_template("man_rate_veriler.html", columns=columns, veri_listesi=veri_listesi)
 
 @app.route("/tablo")
 def tablo():
@@ -207,6 +207,7 @@ def tablo():
         ortalamalar=ortalamalar,
         toplam_giris_sayisi=toplam_giris_sayisi
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
