@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import random
 from db_config import get_db_connection
+import requests
 
 app = Flask(__name__)
 app.jinja_env.globals.update(zip=zip)
@@ -59,6 +60,11 @@ def clean_score(val):
         return int(val)
     except (TypeError, ValueError):
         return 0
+
+@app.route("/myip")
+def my_ip():
+    ip = requests.get("https://api.ipify.org").text
+    return f"My public IP is: {ip}"
 
 @app.route("/", methods=["GET", "POST"])
 def form():
