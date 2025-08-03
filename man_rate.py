@@ -28,7 +28,6 @@ sorular = {
     "Cinsel İstek": "Tutkulu bir enerjiyle mi yaklaşır, yoksa ‘bugün yorgunum’lar hep mi var?"
 }
 
-# Veritabanındaki sütun isimleri (Türkçe karaktersiz, boşluksuz)
 key_map = {
     "Empati": "empati",
     "Güvenilirlik": "guvenilirlik",
@@ -52,12 +51,7 @@ key_map = {
     "Cinsel İstek": "cinsel_istek"
 }
 
-def clean_score(val):
-    """Formdan gelen değeri integer yapar, olmazsa 0 döner"""
-    try:
-        return int(val)
-    except (TypeError, ValueError):
-        return 0
+reverse_key_map = {v: k for k, v in key_map.items()}
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -87,11 +81,13 @@ def form():
 
     return render_template("man_rate_form.html", sorular=sorular)
 
+
 @app.route("/result/<kodad>")
 def result(kodad):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM ratings WHERE kod_adi = %s ORDER BY id DESC LIMIT 1", (kodad,))
+    columns = [desc[0] for desc in cursor.description]
     row = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -99,9 +95,8 @@ def result(kodad):
     if not row:
         return "<h2>Kayıt bulunamadı.</h2>"
 
-    # row dict-like değilse, onu da kontrol etmek gerekebilir. Örnek: row bir tuple ise...
-    # Ama eğer cursor.row_factory dict gibi ayarlandıysa direkt aşağıdaki çalışır.
-    toplam_puan = {soru: row[key_map[soru]] for soru in sorular}
+    data = dict(zip(columns, row))
+    toplam_puan = {soru: data[key_map[soru]] for soru in sorular}
 
     en_iyi = [(s, p) for s, p in toplam_puan.items() if p >= 8]
     en_kotu = [(s, p) for s, p in toplam_puan.items() if p <= 3]
@@ -127,28 +122,41 @@ def result(kodad):
         kotu_ozellik=kotu_ozellik
     )
 
+
 @app.route("/veriler")
 def veriler():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM ratings ORDER BY id DESC")
     columns = [desc[0] for desc in cursor.description]
-    columns = columns[1:]
-    veri_listesi  = cursor.fetchall()
-
+    rows = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    return render_template("man_rate_veriler.html", columns=columns, veri_listesi=veri_listesi)
+    veri_listesi = [dict(zip(columns, row)) for row in rows]
+    display_columns = []
+    for col in columns:
+        if col in reverse_key_map:
+            display_columns.append(reverse_key_map[col])
+        elif col in ["kod_adi", "ex_ismi"]:
+            display_columns.append(col.replace("_", " ").capitalize())
+        else:
+            display_columns.append(col)
+
+    return render_template("man_rate_veriler.html", columns=display_columns, veri_listesi=veri_listesi)
+
 
 @app.route("/tablo")
 def tablo():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM ratings")
-    veriler = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+    rows = cursor.fetchall()
     cursor.close()
     conn.close()
+
+    veriler = [dict(zip(columns, row)) for row in rows]
 
     if not veriler:
         return render_template(
@@ -165,24 +173,17 @@ def tablo():
     en_iyiler = {}
     en_kotuler = {}
 
-    # Her soru için kod_adı bazlı ortalamaları hesapla
     for soru, key in key_map.items():
         kod_ortalamalari = {}
         sayac = {}
 
         for v in veriler:
-            kod = v["kod_adi"]
+            kod = v.get("kod_adi")
             deger = v.get(key)
-
             if isinstance(deger, (int, float)):
-                if kod in kod_ortalamalari:
-                    kod_ortalamalari[kod] += deger
-                    sayac[kod] += 1
-                else:
-                    kod_ortalamalari[kod] = deger
-                    sayac[kod] = 1
+                kod_ortalamalari[kod] = kod_ortalamalari.get(kod, 0) + deger
+                sayac[kod] = sayac.get(kod, 0) + 1
 
-        # Gerçek ortalamaları hesapla
         kod_ortalama_listesi = [
             (kod, round(kod_ortalamalari[kod] / sayac[kod], 2))
             for kod in kod_ortalamalari
