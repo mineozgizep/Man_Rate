@@ -143,7 +143,10 @@ def veriler():
         else:
             display_columns.append(col)
 
-    return render_template("man_rate_veriler.html", columns=display_columns, veri_listesi=veri_listesi)
+    return render_template("man_rate_veriler.html", 
+                           columns=display_columns, 
+                           veri_listesi=veri_listesi,
+                           backend_columns=columns)
 
 
 @app.route("/tablo")

@@ -114,9 +114,11 @@
       <tbody>
         {% for satir in veri_listesi %}
           <tr>
-            {% for baslik in columns %}
+            {% for i in range(columns|length) %}
+              {% set baslik = columns[i] %}
+              {% set backend_key = backend_columns[i] %}
               {% if baslik != 'ID' %}
-                <td data-label="{{ baslik }}">{{ satir[baslik] }}</td>
+                <td data-label="{{ baslik }}">{{ satir[backend_key] }}</td>
               {% endif %}
             {% endfor %}
           </tr>
