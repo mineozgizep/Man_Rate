@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: man-rate-app
+    env: python
+    python_version: 3.12
+    # Diğer ayarlar
