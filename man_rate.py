@@ -3,7 +3,6 @@ import random
 from db_config import get_db_connection
 
 app = Flask(__name__)
-app.jinja_env.globals.update(zip=zip)
 
 # SORU METİNLERİ (formda gösterilecek)
 sorular = {
@@ -66,7 +65,7 @@ def form():
     if request.method == "POST":
         kodad = request.form.get("kodad")
         isim = request.form.get("isim")
-        puanlar = {soru: clean_score(request.form.get(soru)) for soru in sorular}
+        puanlar = {soru: int(request.form.get(soru) or 0) for soru in sorular}
 
         conn = get_db_connection()
         cursor = conn.cursor()
